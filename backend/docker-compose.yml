@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai
+    restart: always
+    networks:
+      - mynetwork
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code/app
+      - E:/Projects/KSTEAM/Dance Data/new_ksteam_data/cdn/vr_team/media_storage/temp_data/kr/woosong/:/data/woosong/
+      - E:/Projects/KSTEAM/Dance Data/new_ksteam_data/cdn/tms/kr/woosong/:/data/woosong_original/
+    command: /bin/bash -c "nvidia-smi && CUDA_LAUNCH_BLOCKING=1 && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"        
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+networks:
+  mynetwork:
+    name: mynetwork
+    external: true
