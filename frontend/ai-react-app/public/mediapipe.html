@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pose Detection</title>
+</head>
+
+<body>
+
+    <input type="file" id="imageInput" accept="image/*">
+    <img id="uploadedImage" style="max-width: 100%; margin-top: 20px;">
+    <button onclick="detectPose()">Detect Pose</button>
+
+    <script>
+        // Import TFJS runtime with side effects.
+        import '@tensorflow/tfjs-backend-webgl';
+        import * as poseDetection from '@tensorflow-models/pose-detection';
+
+        async function detectPose() {
+            const imageElement = document.getElementById('uploadedImage');
+            const image = tf.browser.fromPixels(imageElement);
+
+            const detector = await poseDetection.createDetector(poseDetection.SupportedModels.BlazePose, {runtime: 'mediapipe'});
+            const poses = await detector.estimatePoses(image);
+
+            // Draw the detected poses on the image
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const context = canvas.getContext('2d');
+            context.drawImage(imageElement, 0, 0, image.width, image.height);
+
+            // Display the image with detected poses
+            document.body.appendChild(canvas);
+
+            // Clean up resources
+            image.dispose();
+            poseNet.dispose();
+        }
+
+        document.getElementById('imageInput').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imageElement = document.getElementById('uploadedImage');
+                    imageElement.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
